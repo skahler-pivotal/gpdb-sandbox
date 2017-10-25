@@ -6,6 +6,7 @@ source /tmp/release.properties
 
 install_zeppelin(){
 
+echo 'Install Zeppelin'
 sudo cp /tmp/bins/$ZEPPELIN_VERSION.tar.gz /usr/local
 cd /usr/local
 sudo tar xvfz $ZEPPELIN_VERSION.tar.gz

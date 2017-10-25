@@ -13,7 +13,7 @@ install_gpcc(){
  #gpstop -a -u
 
  ### ARGH more prompts need removal to automate
- sed -i 's/beta_port = auto_install/#beta_port = auto_install/' /usr/local/greenplum-cc-web/bin/gpcmdr.py
+ #sed -i 's/beta_port = auto_install/#beta_port = auto_install/' /usr/local/greenplum-cc-web/bin/gpcmdr.py
 
  gpperfmon_install --enable --password pivotal --port 5432
  gpstop -a -r

@@ -9,7 +9,7 @@ amazon-ebs)
     /etc/init.d/iptables stop
     setenforce 0
     sed -i 's/^SELINUX=.*/SELINUX=disabled/g' /etc/sysconfig/selinux 
-    /usr/bin/yum -y install kernel-headers kernel-devel gcc make perl curl wget git java-1.8.0-openjdk java-1.8.0-openjdk-devel unzip sudo epel-releases ed sed ntpd nc lsof patch
+    /usr/bin/yum -y install kernel-headers kernel-devel gcc make perl curl wget git java-1.8.0-openjdk java-1.8.0-openjdk-devel unzip sudo epel-releases ed sed ntpd nc lsof patch m4
     /usr/sbin/groupadd gpadmin
     /usr/sbin/useradd gpadmin -g gpadmin -G wheel
     /usr/sbin/useradd gpuser -g gpadmin -G wheel
@@ -69,20 +69,6 @@ virtualbox-iso|virtualbox-ovf)
 vmware-iso|vmware-vmx)
     echo "==> Installing VMware Tools"
     cat /etc/redhat-release
-    if grep -q -i "release 6" /etc/redhat-release ; then
-        # Uninstall fuse to fake out the vmware install so it won't try to
-        # enable the VMware blocking filesystem
-        yum erase -y fuse
-    fi
-    # Assume that we've installed all the prerequisites:
-    # kernel-headers-$(uname -r) kernel-devel-$(uname -r) gcc make perl
-    # from the install media via ks.cfg
-
-    # On RHEL 5, add /sbin to PATH because vagrant does a probe for
-    # vmhgfs with lsmod sans PATH
-    if grep -q -i "release 5" /etc/redhat-release ; then
-        echo "export PATH=$PATH:/usr/sbin:/sbin" >> /root/.bashrc
-    fi
 
     cd /tmp
     mkdir -p /mnt/cdrom

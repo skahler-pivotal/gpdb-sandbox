@@ -21,7 +21,8 @@ cp /tmp/bins/$GPTEXT_VERSION.bin /home/gpadmin/
 }
 
 _main() {
-	configure_gptext
+        echo "Configure GPTEXT"
+	#configure_gptext
 }
 
 _main "$@"

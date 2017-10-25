@@ -36,7 +36,7 @@ echo "**************************************************************************
 echo "* Script starts the Greenplum DB, Greenplum Control Center, and Apache Zeppelin *"
 echo "*********************************************************************************"
 echo "* Starting Greenplum Database..."
-ip=\$(/sbin/ifconfig eth0 | grep 'inet addr:' | cut -d: -f2 | awk '{ print \$1}')
+ip=\$(/sbin/ip addr show | grep 'inet ' | grep -v 127.0.0 | awk '{ print \$2}' | cut -d/ -f1)
 source /usr/local/greenplum-db/greenplum_path.sh
 source /usr/local/greenplum-cc-web/gpcc_path.sh
 #source /home/gpadmin/gp-wlm/gp-wlm_path.sh

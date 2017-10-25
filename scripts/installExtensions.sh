@@ -1,9 +1,6 @@
 #!/usr/bin/env bash
 source /tmp/release.properties
 
-
-
-
 install_madlib(){
  echo "TEST VARIABLES"
  echo $GPDB_VERSION
@@ -23,6 +20,8 @@ install_madlib(){
  gppkg -i $PLPERL_FILE
  gppkg -i $PLJAVA_FILE
  gppkg -i $POSTGIS_FILE
+ gppkg -i $DATASCIENCEPYTHON_FILE
+ gppkg -i $DATASCIENCER_FILE
  source /usr/local/greenplum-db/greenplum_path.sh
  gpstop -r -a 
  psql -d template1 -f $GPHOME/share/postgresql/contrib/postgis-2.0/postgis.sql
@@ -45,10 +44,10 @@ install_pgcrypto(){
 }
 
 
-_main() {
+_main(){
+        echo "Installing Packages"
 	install_madlib
 	install_pgcrypto
-
 }
 
 

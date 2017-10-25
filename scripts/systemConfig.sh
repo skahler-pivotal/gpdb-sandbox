@@ -7,6 +7,7 @@ shopt -s nullglob
 echo $BUILD_NAME Build Started
 for filename in /tmp/bins/*
 do
+        echo $filename
 	justfile=${filename:10}
         case $justfile in
                 *greenplum-db*) gpdb=$justfile
@@ -28,7 +29,6 @@ do
 				gptextnum=${gptext:15}
 				echo "GPTEXT_VERSION_NUMBER=${gptextnum%%-*}" >>/tmp/release.properties 
                                 ;;
-
                 *madlib*)       madlib=$justfile
 				strip_ext $justfile
                                 echo "MADLIB_FILE=$madlib" >> /tmp/release.properties
@@ -49,13 +49,6 @@ do
                                 echo "PLR_FILE=$plr" >> /tmp/release.properties
                                 echo "PLR_VERSION=$shortname" >> /tmp/release.properties
 				;;
-                *zeppelin*)     zepp=$justfile
-        			strip_ext $justfile
-				echo $zepp
-				echo $shortname
-                                echo "ZEPPELIN_FILE=$zepp" >> /tmp/release.properties
-                                echo "ZEPPELIN_VERSION=$shortname" >> /tmp/release.properties
-				;;
                 *postgis*)      post=$justfile
         			strip_ext $justfile
                                 echo "POSTGIS_FILE=$post" >> /tmp/release.properties
@@ -65,6 +58,23 @@ do
                                 strip_ext $justfile
                                 echo "PGCRYPTO_FILE=$pgcrypto" >> /tmp/release.properties
                                 echo "PGCRYPTO_VERSION=$shortname" >> /tmp/release.properties
+                                ;;
+                *DataSciencePython*)  DataSciencePython=$justfile
+                                strip_ext $justfile
+                                echo "DATASCIENCEPYTHON_FILE=$DataSciencePython" >> /tmp/release.properties
+                                echo "DATASCIENCEPYTHON_VERSION=$shortname" >> /tmp/release.properties
+				;;
+                *DataScienceR*) DataScienceR=$justfile
+                                strip_ext $justfile
+                                echo "DATASCIENCER_FILE=$DataScienceR" >> /tmp/release.properties
+                                echo "DATASCIENCER_VERSION=$shortname" >> /tmp/release.properties
+				;;
+                *zeppelin*)     zepp=$justfile
+                                strip_ext $justfile
+                                echo $zepp
+                                echo $shortname
+                                echo "ZEPPELIN_FILE=$zepp" >> /tmp/release.properties
+                                echo "ZEPPELIN_VERSION=$shortname" >> /tmp/release.properties
                                 ;;
                 *)              echo "UNrecognized File: $justfile"
                                 ;;
@@ -90,7 +100,7 @@ yum -y install unzip
 
 unzip  /tmp/bins/$GPDB_VERSION.zip -d /tmp/bins/
 unzip  /tmp/bins/$GPCC_VERSION.zip -d /tmp/bins/
-tar -C /tmp/bins/ -zxvf /tmp/bins/$GPTEXT_VERSION.tar.gz 
+#tar -C /tmp/bins/ -zxvf /tmp/bins/$GPTEXT_VERSION.tar.gz 
 
 sed -i 's/more <</cat > \/tmp\/gpdb.lic <</g' /tmp/bins/$GPDB_VERSION.bin
 sed -i 's/agreed=/agreed=1/' /tmp/bins/$GPDB_VERSION.bin
@@ -102,19 +112,19 @@ sed -i 's/agreed=/agreed=1/' /tmp/bins/$GPCC_VERSION.bin
 sed -i 's/pathVerification=/pathVerification=1/' /tmp/bins/$GPCC_VERSION.bin
 sed -i '/defaultInstallPath=/a installPath=${defaultInstallPath}' /tmp/bins/$GPCC_VERSION.bin
 
-sed -i 's/more <</cat > \/tmp\/gptext.lic <</g' /tmp/bins/$GPTEXT_VERSION.bin
-sed -i 's/AGREE=$/AGREE=1/g' /tmp/bins/$GPTEXT_VERSION.bin
-sed -i 's/read REPLY LEFTOVER/REPLY=y/g' /tmp/bins/$GPTEXT_VERSION.bin
-sed -i "s/read INSTALL_LOC LEFTOVER/INSTALL_LOC=\/usr\/local\/greenplum-text-$GPTEXT_VERSION_NUMBER/g" /tmp/bins/$GPTEXT_VERSION.bin
-sed -i 's/pathVerification=/pathVerification=1/' /tmp/bins/$GPTEXT_VERSION.bin
-sed -i '/defaultInstallPath=/a installPath=${defaultInstallPath}' /tmp/bins/$GPTEXT_VERSION.bin
+#sed -i 's/more <</cat > \/tmp\/gptext.lic <</g' /tmp/bins/$GPTEXT_VERSION.bin
+#sed -i 's/AGREE=$/AGREE=1/g' /tmp/bins/$GPTEXT_VERSION.bin
+#sed -i 's/read REPLY LEFTOVER/REPLY=y/g' /tmp/bins/$GPTEXT_VERSION.bin
+#sed -i "s/read INSTALL_LOC LEFTOVER/INSTALL_LOC=\/usr\/local\/greenplum-text-$GPTEXT_VERSION_NUMBER/g" /tmp/bins/$GPTEXT_VERSION.bin
+#sed -i 's/pathVerification=/pathVerification=1/' /tmp/bins/$GPTEXT_VERSION.bin
+#sed -i '/defaultInstallPath=/a installPath=${defaultInstallPath}' /tmp/bins/$GPTEXT_VERSION.bin
 
 /tmp/bins/$GPDB_VERSION.bin 
 /tmp/bins/$GPCC_VERSION.bin
 
-echo "Creating Greenplum Text Directories: /usr/local/greenplum-text-$GPTEXT_VERSION_NUMBER"
-mkdir /usr/local/greenplum-text-$GPTEXT_VERSION_NUMBER
-ln -s /usr/local/greenplum-text-$GPTEXT_VERSION_NUMBER /usr/local/greenplum-text
+#echo "Creating Greenplum Text Directories: /usr/local/greenplum-text-$GPTEXT_VERSION_NUMBER"
+#mkdir /usr/local/greenplum-text-$GPTEXT_VERSION_NUMBER
+#ln -s /usr/local/greenplum-text-$GPTEXT_VERSION_NUMBER /usr/local/greenplum-text
 
 chown -R gpadmin /usr/local/greenplum*
 }
@@ -133,8 +143,7 @@ setup_gpdb(){
 fqdn="$SANDBOX.localdomain"
 hostsfile="/etc/hosts"
 shortname=$(echo "$fqdn" | cut -d "." -f1)
-ip=$(/sbin/ifconfig eth0 | grep 'inet addr:' | cut -d: -f2 | awk '{ print $1}')
-#ip=$(/sbin/ifconfig | perl -e 'while (<>) { if (/inet +addr:((\d+\.){3}\d+)\s+/ and $1 ne "127.0.0.1") { $ip = $1; break; } } print "$ip\n"; ' )
+ip=$(/sbin/ip addr show | grep 'inet ' | grep -v 127.0.0 | awk '{ print $2}' | cut -d/ -f1)
 cat > $hostsfile <<HOSTS
 #This file is automatically genreated on boot; updated at $(date)
 127.0.0.1 localhost.localdomain localhost
@@ -144,6 +153,7 @@ HOSTS
 
 echo $fqdn >> /usr/local/greenplum-db/hostsfile
 source /usr/local/greenplum-db/greenplum_path.sh
+echo 'Replacing hostname with fqdn'
 sed -i "s/%HOSTNAME%/$fqdn/" /tmp/configs/gpinitsystem_singlenode
 }
 
@@ -176,7 +186,7 @@ cat /tmp/configs/limits.conf.add >> /etc/security/limits.conf
 setup_ipaddress() {
 
 rm -rf /etc/udev/rules.d/70-persistent-net.rules
-sed -i '/HWADDR/d' /etc/sysconfig/network-scripts/ifcfg-eth*
+sed -i '/HWADDR/d' /etc/sysconfig/network-scripts/ifcfg-e*
 
 }
 
@@ -184,7 +194,7 @@ setup_hostname() {
 
 cat >> /etc/rc.d/rc.local <<EOF
 if [ ! -f "/home/gpadmin/.skipSetup" ]; then
-  ip=\$(/sbin/ifconfig | perl -e 'while (<>) { if (/inet +addr:((\d+\.){3}\d+)\s+/ and \$1 ne "127.0.0.1") { \$ip = \$1; break; } } print "\$ip\n"; ' )
+  ip=$(/sbin/ip addr show | grep 'inet ' | grep -v 127.0.0 | awk '{ print $2}' | cut -d/ -f1)
   fqdn="$SANDBOX.localdomain"
   shortname=\$(echo "\$fqdn" | cut -d "." -f1)
   hostsfile=/etc/hosts
@@ -346,7 +356,7 @@ _main() {
 	setup_data_path
 	setup_configs
         setup_gpdb
-        setup_gptext
+        #setup_gptext
 	setup_message
 }
 
