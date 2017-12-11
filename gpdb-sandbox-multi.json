@@ -6,8 +6,8 @@
         "iso_checksum_type": "sha256",
 	"headless": "false",
 	"vm_basename":"PivotalGPDB-Sandbox",
-	"gpversion":"4.3.17.1",
-        "gpbuildstamp":"20171023"
+	"gpversion":"4.3.18.0",
+        "gpbuildstamp":"20171129"
 
 },
 "builders": [
@@ -15,7 +15,7 @@
 	"name": "aws",
 	"type": "amazon-ebs",
 	"region": "us-east-1",
-	"source_ami": "ami-a87a70c2",
+	"source_ami": "ami-9ccea6e6",
 	"instance_type": "m4.xlarge",
 	"ssh_username": "gpadmin",
 	"ssh_pty": "true",
