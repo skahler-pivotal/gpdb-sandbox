@@ -16,7 +16,7 @@ amazon-ebs)
     echo "pivotal"| passwd --stdin gpuser
     echo "gpuser        ALL=(ALL)       NOPASSWD: ALL" >> /etc/sudoers
     echo "gpdb-sandbox.localdomain" > /etc/hostname
-    hostname gpdb-sandbox.localdomain
+    hostnamectl set-hostname "gpdb-sandbox.localdomain"
     sed -i "s/NETWORKING=.*/NETWORKING=yes/g" /etc/sysconfig/network
     sed -i "s/HOSTNAME=.*/HOSTNAME=gpdb-sandbox.localdomain/g" /etc/sysconfig/network
     mkdir -p /gpdata/master
@@ -28,7 +28,7 @@ docker)
     echo "==> Performing Docker items that are normally done in kickstart"
     echo "==> most of this prepared in boogabee/gpdbsandboxbase:latest"
     echo "gpdb-sandbox.localdomain" > /etc/hostname
-    hostname gpdb-sandbox.localdomain
+    hostnamectl set-hostname "gpdb-sandbox.localdomain"
     service sshd start
     echo "host all all 0.0.0.0/0 md5" >> /gpdata/master/gpseg-1/pg_hba.conf
     echo "MASTER_DATA_DIRECTORY=/gpdata/master/gpseg-1" >> /home/gpadmin/.bashrc

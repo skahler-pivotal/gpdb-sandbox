@@ -143,7 +143,8 @@ setup_gpdb(){
 fqdn="$SANDBOX.localdomain"
 hostsfile="/etc/hosts"
 shortname=$(echo "$fqdn" | cut -d "." -f1)
-ip=$(/sbin/ip addr show | grep 'inet ' | grep -v 127.0.0 | awk '{ print $2}' | cut -d/ -f1)
+ip=$(hostname -I)
+ip=${ip// /}
 cat > $hostsfile <<HOSTS
 #This file is automatically genreated on boot; updated at $(date)
 127.0.0.1 localhost.localdomain localhost
@@ -186,15 +187,17 @@ cat /tmp/configs/limits.conf.add >> /etc/security/limits.conf
 setup_ipaddress() {
 
 rm -rf /etc/udev/rules.d/70-persistent-net.rules
-sed -i '/HWADDR/d' /etc/sysconfig/network-scripts/ifcfg-e*
+sed -i '/HWADDR/d' /etc/sysconfig/network-scripts/ifcfg-*
 
 }
 
 setup_hostname() {
 
-cat >> /etc/rc.d/rc.local <<EOF
+cat > /etc/rc.d/rc.local <<EOF
+#!/bin/sh
 if [ ! -f "/home/gpadmin/.skipSetup" ]; then
-  ip=$(/sbin/ip addr show | grep 'inet ' | grep -v 127.0.0 | awk '{ print $2}' | cut -d/ -f1)
+  ip=\$(hostname -I)
+  ip=\${ip// /}
   fqdn="$SANDBOX.localdomain"
   shortname=\$(echo "\$fqdn" | cut -d "." -f1)
   hostsfile=/etc/hosts
@@ -210,7 +213,7 @@ HOSTS
   sed -i "s/HOSTNAME=.*/HOSTNAME=gpdb-sandbox.localdomain/g" /etc/sysconfig/network
 
   # SET HOSTNAME
-  hostname gpdb-sandbox.localdomain
+  hostnamectl set-hostname "gpdb-sandbox.localdomain"
 
   # FIX IP LINE
   sed -i "/IP:/d" /etc/issue
@@ -222,6 +225,8 @@ HOSTS
   sed -i "86i host all gpadmin \$ip/32 trust" /gpdata/master/gpseg-1/pg_hba.conf
 fi
 EOF
+chmod oug+x /etc/rc.d/rc.local
+systemctl enable rc-local
 
 }
 
